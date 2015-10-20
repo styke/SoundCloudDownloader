@@ -1,0 +1,115 @@
+/*
+ * SoundCloudDownloader
+ * Copyright (C) 2015 Ruben Anders
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+apply from: 'javadocAndSourcesJar.gradle'
+
+group 'cf.randers'
+version = file('src/main/resources/version').getText('utf8')
+mainClassName = 'cf.randers.scd.CommandLineInterface'
+
+if (System.getenv('CIRCLECI').equals('true'))
+    file('src/main/resources/build').write(System.getenv('CIRCLE_BUILD_NUM'))
+
+jar {
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+}
+
+//region Dependency Management
+repositories {
+    jcenter()
+    maven { url  "http://dl.bintray.com/ijabz/maven" }
+    maven { url 'http://dl.bintray.com/randers00/intellijannotations' } // Holds IntelliJ IDEA Annotations
+}
+
+//apply from: 'adjustedSource.gradle'
+
+dependencies {
+    compile 'ch.qos.logback:logback-classic:1.1.3'
+//    compile 'org.apache.commons:commons-collections4:4.0' // ObjectArrayIterator
+//    compile 'com.intellij:annotations:14.1.4'
+//    compile "com.google.guava:guava:18.0" // Change version in doc link as well
+//    compile 'org.apache.commons:commons-lang3:3.4' // Pair & Triple
+//    compile 'com.google.code.findbugs:annotations:3.0.0'
+    compile 'commons-io:commons-io:2.4'
+    compile 'com.google.code.gson:gson:2.3.1'
+//    compile 'org.xerial:sqlite-jdbc:3.8.11.2'
+    compile 'com.beust:jcommander:1.48'
+    compile 'org.apache.httpcomponents:httpclient:4.5.1'
+    compile 'net.jthink:jaudiotagger:2.2.5'
+//    compile fileTree(dir: 'libs', include: '*.jar')
+
+    // Tests
+    testCompile 'junit:junit:4.7'
+//    testCompile 'com.github.stefanbirkner:fishbowl:1.3.0'
+}
+//endregion
+
+//region utf8
+tasks.withType(JavaCompile) {
+    options.encoding = 'utf8'
+}
+
+tasks.run {
+    workingDir "$buildDir/run-dir/"
+    doFirst {
+        workingDir.mkdirs()
+    }
+}
+
+String buildOptionsString(String... links) {
+    StringBuilder stringBuilder = new StringBuilder(links.length * 32)
+    for (int i = 0; i < links.length; i++) {
+        stringBuilder.append(links[i])
+        if (i + 1 < links.length)
+            stringBuilder.append("' -link '")
+    }
+    return stringBuilder.toString()
+}
+
+tasks.javadoc {
+    options.addStringOption('link', buildOptionsString('https://cdn.rawgit.com/google/guava/gh-pages/_releases/18.0/api/docs/',
+            'https://docs.oracle.com/javase/8/docs/api/'))
+    options.addStringOption('encoding', 'utf8')
+    options.addStringOption('docencoding', 'utf8')
+    options.addStringOption('charset', 'utf8')
+//    options.setOutputLevel(JavadocOutputLevel.VERBOSE)
+}
+//endregion
+
+tasks.withType(Test) {
+    workingDir = "$buildDir/test-results/working-dir"
+    systemProperty 'file.encoding', 'utf8'
+    doFirst {
+        file(workingDir).mkdirs()
+    }
+}
+
+tasks.withType(Jar) {
+    version = project.version + '-b' + System.getenv('CIRCLE_BUILD_NUM')
+}
+
+task makeRunDir << {
+    file ('build/working-dir').mkdirs()
+}
+
+defaultTasks 'clean', 'build'

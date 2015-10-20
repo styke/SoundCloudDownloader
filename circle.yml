@@ -1,0 +1,14 @@
+machine:
+  java:
+    version: oraclejdk8
+general:
+  artifacts:
+    - "build/libs/*.jar"
+    - "build/distributions/*.zip"
+dependencies:
+  post:
+    - ./gradlew jar sourcesJar javadocJar distZip
+test:
+  post:
+    - mkdir -p $CIRCLE_TEST_REPORTS/junit/
+    - find . -type f -regex ".*/build/test-results/.*xml" -exec cp {} $CIRCLE_TEST_REPORTS/junit/ \;
