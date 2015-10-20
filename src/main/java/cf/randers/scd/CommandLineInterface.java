@@ -46,17 +46,20 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class CommandLineInterface {
+public class CommandLineInterface
+{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommandLineInterface.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         CommandLineInterface commandLineInterface = new CommandLineInterface();
         new JCommander(commandLineInterface, args);
         commandLineInterface.run();
     }
 
-    private void run() {
+    private void run()
+    {
         LOGGER.info("Making temp dir...");
         File tmpDir = new File("tmp/");
         //noinspection ResultOfMethodCallIgnored
@@ -66,7 +69,8 @@ public class CommandLineInterface {
         maximumConcurrentConnections = Math.min(params.size(), maximumConcurrentConnections > params.size() ? params.size() : maximumConcurrentConnections);
         ThreadPoolExecutor executor = new ThreadPoolExecutor(maximumConcurrentConnections, maximumConcurrentConnections, 0, TimeUnit.NANOSECONDS, tasks);
         LOGGER.info("Starting to execute " + params.size() + " threads...");
-        for (String param : params) {
+        for (String param : params)
+        {
             executor.execute(() -> {
                 LOGGER.info("Started thread for " + param);
                 Map json;
@@ -76,16 +80,18 @@ public class CommandLineInterface {
                 try (CloseableHttpClient client = HttpClients.createDefault();
                      CloseableHttpResponse response = client.execute(
                              new HttpGet(new URIBuilder()
-                                     .setScheme("https")
-                                     .setHost("api.soundcloud.com")
-                                     .setPath("/resolve")
-                                     .addParameter("url", param)
-                                     .addParameter("client_id", "6f141f64ad25764c3345ec3f92c21770")
-                                     .build()));
-                     InputStreamReader inputStreamReader = new InputStreamReader(response.getEntity().getContent())) {
+                                                 .setScheme("https")
+                                                 .setHost("api.soundcloud.com")
+                                                 .setPath("/resolve")
+                                                 .addParameter("url", param)
+                                                 .addParameter("client_id", "6f141f64ad25764c3345ec3f92c21770")
+                                                 .build()));
+                     InputStreamReader inputStreamReader = new InputStreamReader(response.getEntity().getContent()))
+                {
                     json = new Gson().fromJson(inputStreamReader, Map.class);
                     EntityUtils.consumeQuietly(response.getEntity());
-                } catch (Exception e) {
+                } catch (Exception e)
+                {
                     e.printStackTrace();
                     return;
                 }
@@ -94,25 +100,31 @@ public class CommandLineInterface {
                 File tmpFile = new File("tmp/" + json.get("id") + ".mp3");
 
                 try (CloseableHttpClient client = HttpClients.createDefault();
-                     CloseableHttpResponse response = client.execute(new HttpGet(json.get("stream_url") + "?client_id=6f141f64ad25764c3345ec3f92c21770"))) {
+                     CloseableHttpResponse response = client.execute(new HttpGet(json.get("stream_url") + "?client_id=6f141f64ad25764c3345ec3f92c21770")))
+                {
                     IOUtils.copy(response.getEntity().getContent(), new FileOutputStream(tmpFile));
                     EntityUtils.consumeQuietly(response.getEntity());
-                } catch (Exception e) {
+                } catch (Exception e)
+                {
                     e.printStackTrace();
                     return;
                 }
 
                 LOGGER.info("Downloading artwork jpg into memory...");
                 try (CloseableHttpClient client = HttpClients.createDefault();
-                     CloseableHttpResponse response = client.execute(new HttpGet(((String) json.get("artwork_url")).replace("-large.jpg", "-t500x500.jpg") + "?client_id=6f141f64ad25764c3345ec3f92c21770"))) {
+                     CloseableHttpResponse response = client.execute(
+                             new HttpGet(((String) json.get("artwork_url")).replace("-large.jpg", "-t500x500.jpg") + "?client_id=6f141f64ad25764c3345ec3f92c21770")))
+                {
                     artworkBytes = IOUtils.toByteArray(response.getEntity().getContent());
                     EntityUtils.consumeQuietly(response.getEntity());
-                } catch (Exception e) {
+                } catch (Exception e)
+                {
                     e.printStackTrace();
                     return;
                 }
 
-                try {
+                try
+                {
                     LOGGER.info("Reading temp file into AudioFile object...");
                     // Read audio file from tmp directory
                     AudioFile audioFile = AudioFileIO.read(tmpFile);
@@ -128,13 +140,15 @@ public class CommandLineInterface {
 
                     LOGGER.info("Saving audio file...");
                     // Save audio file
-//                    new AudioFileIO().writeFile(audioFile, String.format("%.0f", ((Double) json.get("id")).doubleValue()));
+                    //                    new AudioFileIO().writeFile(audioFile, String.format("%.0f", ((Double) json.get("id")).doubleValue()));
                     new AudioFileIO().writeFile(audioFile, json.get("permalink").toString());
-                } catch (Exception e) {
+                } catch (Exception e)
+                {
                     e.printStackTrace();
                 }
 
                 LOGGER.info("Deleting temp file...");
+                //noinspection ResultOfMethodCallIgnored
                 tmpFile.delete();
                 LOGGER.info("Done.");
             });

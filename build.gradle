@@ -37,7 +37,7 @@ jar {
 //region Dependency Management
 repositories {
     jcenter()
-    maven { url  "http://dl.bintray.com/ijabz/maven" }
+    maven { url "http://dl.bintray.com/ijabz/maven" }
     maven { url 'http://dl.bintray.com/randers00/intellijannotations' } // Holds IntelliJ IDEA Annotations
 }
 
@@ -59,7 +59,7 @@ dependencies {
 //    compile fileTree(dir: 'libs', include: '*.jar')
 
     // Tests
-    testCompile 'junit:junit:4.7'
+//    testCompile 'junit:junit:4.7'
 //    testCompile 'com.github.stefanbirkner:fishbowl:1.3.0'
 }
 //endregion
@@ -109,7 +109,7 @@ tasks.withType(Jar) {
 }
 
 task makeRunDir << {
-    file ('build/working-dir').mkdirs()
+    file('build/working-dir').mkdirs()
 }
 
 defaultTasks 'clean', 'build'
