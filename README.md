@@ -6,7 +6,7 @@ It supports downloading an arbitrary amount of files at arbitrary concurrency.
 
 ## Building on your own
 
-1. If you don't have it already, get the source code by either [cloning this repository][1] or downloading the [source zip file][2] (you will need to extract it into a empty new directory).
+1. If you don't have it already, get the source code by either [cloning this repository][1] or downloading the [source zip file][2] (you will need to extract it into an empty new directory).
 2. Double-click the `gradlew.bat` file on windows, on unix-like systems run the file `./gradlew` in a terminal. It should already have the required `+x` mode. This will run the two tasks `clean` and `build`.
 3. Once the process finishes, the jar files will be ready for you in `build/libs/`.
     Test results can be seen by viewing the file `build/reports/tests/index.html`.
